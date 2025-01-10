@@ -1,47 +1,89 @@
 import tkinter as tk
-from tkinter import ttk
 from tkinter import messagebox
+import pygame.mixer
+import os
 
+pygame.mixer.init()
+SOUNDS = {
+    'correct': 'correct.wav',
+    'wrong': 'wrong.wav',
+    'select': 'select.wav',
+    'start': 'start.wav'
+}
 
 
 PRESIDENT_QUESTIONS = {
-    "Presidential Facts": [
+    "Early Presidents": [
         {"question": "This president was the first to live in the White House", "answer": "Who is John Adams?", "value": 100},
-        {"question": "He was the tallest US president at 6'4\"", "answer": "Who is Abraham Lincoln?", "value": 200},
-        {"question": "This president was never elected as president or vice president", "answer": "Who is Gerald Ford?", "value": 300},
+        {"question": "He was known as the 'Father of the Constitution'", "answer": "Who is James Madison?", "value": 200},
+        {"question": "This president served the shortest term of only 31 days", "answer": "Who is William Henry Harrison?", "value": 300},
+        {"question": "He purchased the Louisiana Territory", "answer": "Who is Thomas Jefferson?", "value": 400},
+        {"question": "This president never married and was a lifelong bachelor", "answer": "Who is James Buchanan?", "value": 500},
     ],
-    "First Ladies": [
-        {"question": "She was the youngest First Lady at age 21", "answer": "Who is Frances Cleveland?", "value": 100},
-        {"question": "This First Lady created the 'Just Say No' campaign", "answer": "Who is Nancy Reagan?", "value": 200},
-        {"question": "She was the first First Lady to have a graduate degree", "answer": "Who is Hillary Clinton?", "value": 300},
+    "20th Century": [
+        {"question": "He was the first president to appear on television", "answer": "Who is Franklin D. Roosevelt?", "value": 100},
+        {"question": "This president established NASA", "answer": "Who is Dwight D. Eisenhower?", "value": 200},
+        {"question": "He was the only president to resign from office", "answer": "Who is Richard Nixon?", "value": 300},
+        {"question": "This president was a former actor", "answer": "Who is Ronald Reagan?", "value": 400},
+        {"question": "He served as president during World War I", "answer": "Who is Woodrow Wilson?", "value": 500},
+    ],
+    "Presidential Facts": [
+        {"question": "This president was left-handed", "answer": "Who is Barack Obama?", "value": 100},
+        {"question": "He was the youngest president at age 42", "answer": "Who is Theodore Roosevelt?", "value": 200},
+        {"question": "This president won a Grammy Award", "answer": "Who is Bill Clinton?", "value": 300},
+        {"question": "He was the first president born outside the original 13 colonies", "answer": "Who is Abraham Lincoln?", "value": 400},
+        {"question": "This president installed the first White House swimming pool", "answer": "Who is Franklin D. Roosevelt?", "value": 500},
     ]
 }
 
 SPORTS_QUESTIONS = {
     "Baseball": [
         {"question": "This player holds the MLB record for career home runs", "answer": "Who is Barry Bonds?", "value": 100},
-        {"question": "This team broke the 'Curse of the Bambino' in 2004", "answer": "Who are the Boston Red Sox?", "value": 200},
-        {"question": "He was the first player to break the color barrier in MLB", "answer": "Who is Jackie Robinson?", "value": 300},
+        {"question": "He had a 56-game hitting streak in 1941", "answer": "Who is Joe DiMaggio?", "value": 200},
+        {"question": "This pitcher threw seven no-hitters", "answer": "Who is Nolan Ryan?", "value": 300},
+        {"question": "He was known as 'The Great Bambino'", "answer": "Who is Babe Ruth?", "value": 400},
+        {"question": "This team won the first World Series in 1903", "answer": "Who are the Boston Americans?", "value": 500},
     ],
     "Basketball": [
         {"question": "This NBA team won the most championships in the 1990s", "answer": "Who are the Chicago Bulls?", "value": 100},
-        {"question": "He holds the record for most points in a single NBA game", "answer": "Who is Wilt Chamberlain?", "value": 200},
-        {"question": "This player is known as 'King James'", "answer": "Who is LeBron James?", "value": 300},
+        {"question": "He scored 100 points in a single game", "answer": "Who is Wilt Chamberlain?", "value": 200},
+        {"question": "This team has the most NBA championships", "answer": "Who are the Boston Celtics?", "value": 300},
+        {"question": "He was known as 'Pistol Pete'", "answer": "Who is Pete Maravich?", "value": 400},
+        {"question": "This player won 11 NBA championships", "answer": "Who is Bill Russell?", "value": 500},
+    ],
+    "Olympics": [
+        {"question": "This swimmer has the most Olympic medals", "answer": "Who is Michael Phelps?", "value": 100},
+        {"question": "She won four gold medals in gymnastics in 1984", "answer": "Who is Mary Lou Retton?", "value": 200},
+        {"question": "This country hosted the first modern Olympics", "answer": "What is Greece?", "value": 300},
+        {"question": "He set the long jump record in 1968 that stood for 23 years", "answer": "Who is Bob Beamon?", "value": 400},
+        {"question": "This sprinter won gold in four consecutive Olympics", "answer": "Who is Carl Lewis?", "value": 500},
     ]
 }
 
 MUSIC_QUESTIONS = {
-    "Pop Music": [
-        {"question": "This artist's 'Thriller' is the best-selling album of all time", "answer": "Who is Michael Jackson?", "value": 100},
-        {"question": "She became the first female artist to win Album of the Year twice at the Grammys", "answer": "Who is Taylor Swift?", "value": 200},
-        {"question": "This group from Liverpool changed pop music forever", "answer": "Who are The Beatles?", "value": 300},
+    "Rock Legends": [
+        {"question": "This band's debut album was 'Please Please Me'", "answer": "Who are The Beatles?", "value": 100},
+        {"question": "He was known as 'The King of Rock and Roll'", "answer": "Who is Elvis Presley?", "value": 200},
+        {"question": "This band wrote 'Stairway to Heaven'", "answer": "Who is Led Zeppelin?", "value": 300},
+        {"question": "He was the lead singer of Queen", "answer": "Who is Freddie Mercury?", "value": 400},
+        {"question": "This guitarist played a flaming guitar at Monterey Pop", "answer": "Who is Jimi Hendrix?", "value": 500},
     ],
-    "Classical": [
-        {"question": "This composer wrote 'Symphony No. 5' while becoming deaf", "answer": "Who is Beethoven?", "value": 100},
-        {"question": "He composed 'The Four Seasons'", "answer": "Who is Vivaldi?", "value": 200},
-        {"question": "This child prodigy composed his first piece at age 5", "answer": "Who is Mozart?", "value": 300},
+    "Modern Music": [
+        {"question": "This artist's 'Folklore' won Album of the Year in 2021", "answer": "Who is Taylor Swift?", "value": 100},
+        {"question": "He is known as the 'King of Pop'", "answer": "Who is Michael Jackson?", "value": 200},
+        {"question": "This rapper's first hit was 'Through the Wire'", "answer": "Who is Kanye West?", "value": 300},
+        {"question": "She became the youngest person to win Album of the Year", "answer": "Who is Billie Eilish?", "value": 400},
+        {"question": "This artist has won the most Grammy Awards", "answer": "Who is Georg Solti?", "value": 500},
+    ],
+    "Music History": [
+        {"question": "This instrument was invented by Adolphe Sax", "answer": "What is the Saxophone?", "value": 100},
+        {"question": "This composer wrote 'The Four Seasons'", "answer": "Who is Vivaldi?", "value": 200},
+        {"question": "This style of music originated in New Orleans", "answer": "What is Jazz?", "value": 300},
+        {"question": "This device replaced the 8-track tape", "answer": "What is the Cassette?", "value": 400},
+        {"question": "This composer wrote his first symphony at age 8", "answer": "Who is Mozart?", "value": 500},
     ]
 }
+
 
 
 
