@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
 import pygame.mixer
-import os
 
+# Initialize pygame mixer for sounds
 pygame.mixer.init()
+
+# Sound effects dictionary
 SOUNDS = {
     'correct': 'correct.wav',
     'wrong': 'wrong.wav',
@@ -11,7 +13,7 @@ SOUNDS = {
     'start': 'start.wav'
 }
 
-
+# Question databases
 PRESIDENT_QUESTIONS = {
     "Early Presidents": [
         {"question": "This president was the first to live in the White House", "answer": "Who is John Adams?", "value": 100},
@@ -84,124 +86,153 @@ MUSIC_QUESTIONS = {
     ]
 }
 
-
-
-
 class JeopardyGame:
     def __init__(self, root):
         self.root = root
         self.root.title("Jeopardy Game")
-        self.root.geometry("800x600")
+        self.root.geometry("1024x768")
         self.score = 0
-        self.questions = None
+        self.create_main_menu()
 
-        # Create main menu frame
-        self.main_menu = tk.Frame(self.root)
+    def play_sound(self, sound_type):
+        try:
+            pygame.mixer.Sound(SOUNDS[sound_type]).play()
+        except:
+            pass
+
+    def create_main_menu(self):
+        self.main_menu = tk.Frame(self.root, bg='navy')
         self.main_menu.pack(expand=True, fill='both')
 
-        # Add game title
         self.title_label = tk.Label(
             self.main_menu,
             text="JEOPARDY",
             font=("Arial", 48, "bold"),
-            fg="blue"
+            fg="yellow",
+            bg='navy'
         )
         self.title_label.pack(pady=50)
 
-        # Add start button
         self.start_button = tk.Button(
             self.main_menu,
             text="Start Game",
             font=("Arial", 20),
             command=self.show_game_modes,
             width=15,
-            height=2
+            height=2,
+            bg='gold',
+            fg='navy'
         )
         self.start_button.pack(pady=30)
 
     def show_game_modes(self):
-        # Hide main menu
+        self.play_sound('select')
         self.main_menu.pack_forget()
 
-        # Create game modes frame
-        self.mode_frame = tk.Frame(self.root)
+        self.mode_frame = tk.Frame(self.root, bg='navy')
         self.mode_frame.pack(expand=True, fill='both')
 
-        # Add mode selection title
         mode_label = tk.Label(
             self.mode_frame,
             text="Select Game Mode",
-            font=("Arial", 36, "bold")
+            font=("Arial", 36, "bold"),
+            fg="yellow",
+            bg='navy'
         )
         mode_label.pack(pady=30)
 
-        # Add mode buttons
-        modes = ["Presidents", "Sports", "Music"]
-        for mode in modes:
+        modes = {
+            "Presidents": PRESIDENT_QUESTIONS,
+            "Sports": SPORTS_QUESTIONS,
+            "Music": MUSIC_QUESTIONS
+        }
+
+        for mode, questions in modes.items():
             button = tk.Button(
                 self.mode_frame,
                 text=mode,
                 font=("Arial", 18),
                 width=15,
                 height=2,
-                command=lambda m=mode: self.start_game(m)
+                command=lambda m=mode, q=questions: self.start_game(m, q),
+                bg='gold',
+                fg='navy'
             )
             button.pack(pady=10)
 
-    def start_game(self, mode):
+        back_button = tk.Button(
+            self.mode_frame,
+            text="Back to Main Menu",
+            font=("Arial", 14),
+            command=self.return_to_main,
+            bg='red',
+            fg='white'
+        )
+        back_button.pack(pady=20)
+
+    def start_game(self, mode, questions):
+        self.play_sound('start')
         self.mode_frame.pack_forget()
+        self.questions = questions
 
-        # Set questions based on mode
-        if mode == "Presidents":
-            self.questions = PRESIDENT_QUESTIONS
-        elif mode == "Sports":
-            self.questions = SPORTS_QUESTIONS
-        else:
-            self.questions = MUSIC_QUESTIONS
-
-        self.create_game_board()
-
-    def create_game_board(self):
-        self.game_frame = tk.Frame(self.root)
+        self.game_frame = tk.Frame(self.root, bg='navy')
         self.game_frame.pack(expand=True, fill='both')
 
-        # Create score display
+        # Score display
         self.score_label = tk.Label(
             self.game_frame,
             text=f"Score: ${self.score}",
-            font=("Arial", 20, "bold")
+            font=("Arial", 24, "bold"),
+            fg="yellow",
+            bg='navy'
         )
         self.score_label.pack(pady=10)
 
-        # Create game board grid
-        self.board_frame = tk.Frame(self.game_frame)
-        self.board_frame.pack(padx=20, pady=20)
+        # Game board
+        self.board_frame = tk.Frame(self.game_frame, bg='navy')
+        self.board_frame.pack(pady=20)
 
         # Create category headers
-        for col, category in enumerate(self.questions.keys()):
+        for col, category in enumerate(questions.keys()):
             tk.Label(
                 self.board_frame,
                 text=category,
                 font=("Arial", 12, "bold"),
                 wraplength=150,
-                width=15,
                 height=2,
-                relief="raised"
-            ).grid(row=0, column=col, padx=2, pady=2)
+                width=20,
+                relief='raised',
+                bg='navy',
+                fg='yellow'
+            ).grid(row=0, column=col, padx=5, pady=5)
 
         # Create question buttons
-        for col, category in enumerate(self.questions.keys()):
-            for row, question in enumerate(self.questions[category], 1):
+        for col, category in enumerate(questions.keys()):
+            for row, question in enumerate(questions[category]):
                 btn = tk.Button(
                     self.board_frame,
                     text=f"${question['value']}",
-                    width=15,
+                    width=20,
                     height=2,
-                    command=lambda c=category, r=row-1: self.show_question(c, r)
+                    command=lambda c=category, r=row: self.show_question(c, r),
+                    bg='gold',
+                    fg='navy'
                 )
-                btn.grid(row=row, column=col, padx=2, pady=2)
+                btn.grid(row=row+1, column=col, padx=5, pady=5)
+
+        # Back button
+        back_button = tk.Button(
+            self.game_frame,
+            text="Back to Game Modes",
+            font=("Arial", 14),
+            command=self.return_to_modes,
+            bg='red',
+            fg='white'
+        )
+        back_button.pack(pady=10)
 
     def show_question(self, category, index):
+        self.play_sound('select')
         question = self.questions[category][index]
         response = messagebox.askquestion(
             "Question",
@@ -209,28 +240,40 @@ class JeopardyGame:
             icon='question'
         )
 
-        # Show answer and update score
         if response == 'yes':
             answer_correct = messagebox.askquestion(
                 "Answer",
                 f"The correct answer is: {question['answer']}\nDid you get it right?"
             )
             if answer_correct == 'yes':
+                self.play_sound('correct')
                 self.score += question['value']
             else:
+                self.play_sound('wrong')
                 self.score -= question['value']
 
-            # Update score display
             self.score_label.config(text=f"Score: ${self.score}")
 
-            # Disable the button after it's been used
+            # Disable used question
             for widget in self.board_frame.winfo_children():
                 if widget.grid_info()['column'] == list(self.questions.keys()).index(category) \
                    and widget.grid_info()['row'] == index + 1:
                     widget.config(state='disabled', bg='gray')
-        
 
-# Create and run the application
+    def return_to_main(self):
+        self.play_sound('select')
+        if hasattr(self, 'mode_frame'):
+            self.mode_frame.pack_forget()
+        if hasattr(self, 'game_frame'):
+            self.game_frame.pack_forget()
+        self.create_main_menu()
+
+    def return_to_modes(self):
+        self.play_sound('select')
+        self.score = 0
+        self.game_frame.pack_forget()
+        self.show_game_modes()
+
 if __name__ == "__main__":
     root = tk.Tk()
     game = JeopardyGame(root)
